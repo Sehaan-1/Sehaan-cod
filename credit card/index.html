@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-credit-card"></i> Credit Card Manager</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" id="dashboard-link">Dashboard</a></li>
+                    <li><a href="#" id="cards-link">My Cards</a></li>
+                    <li><a href="#" id="transactions-link">Transactions</a></li>
+                    <li><a href="#" id="analytics-link">Analytics</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="auth-section" class="auth-container">
+        <div class="auth-box">
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="signup">Sign Up</button>
+            </div>
+            
+            <form id="login-form" class="auth-form active">
+                <h2>Welcome Back</h2>
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Login</button>
+                <p class="error-message" id="login-error"></p>
+            </form>
+            
+            <form id="signup-form" class="auth-form">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required minlength="6">
+                </div>
+                <button type="submit" class="btn primary-btn">Sign Up</button>
+                <p class="error-message" id="signup-error"></p>
+            </form>
+        </div>
+    </section>
+
+    <div id="app-content" style="display: none;">
+        <main class="container">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="active-section">
+                <h2>Dashboard</h2>
+                <div class="dashboard-summary">
+                    <div class="summary-card">
+                        <h3>Total Cards</h3>
+                        <p id="total-cards">0</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Total Balance</h3>
+                        <p id="total-balance">$0.00</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>This Month's Spending</h3>
+                        <p id="month-spending">$0.00</p>
+                    </div>
+                </div>
+                <div class="recent-activity">
+                    <h3>Recent Transactions</h3>
+                    <div id="recent-transactions-list">
+                        <p class="empty-state">No recent transactions</p>
+                    </div>
+                </div>
+                <div class="spending-overview">
+                    <h3>Spending Overview</h3>
+                    <canvas id="spending-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- Cards Section -->
+            <section id="cards">
+                <div class="section-header">
+                    <h2>My Credit Cards</h2>
+                    <button id="add-card-btn" class="btn primary-btn"><i class="fas fa-plus"></i> Add New Card</button>
+                </div>
+                
+                <div id="cards-container" class="cards-grid">
+                    <p class="empty-state">No cards added yet</p>
+                </div>
+                
+                <!-- Add/Edit Card Modal -->
+                <div id="card-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h2 id="modal-title">Add New Card</h2>
+                        <form id="card-form">
+                            <input type="hidden" id="card-id">
+                            <div class="form-group">
+                                <label for="card-name">Card Nickname</label>
+                                <input type="text" id="card-name" required placeholder="e.g., My Rewards Card">
+                            </div>
+                            <div class="form-group">
+                                <label for="card-type">Card Type</label>
+                                <select id="card-type" required>
+                                    <option value="">Select Card Type</option>
+                                    <option value="visa">Visa</option>
+                                    <option value="mastercard">MasterCard</option>
+                                    <option value="amex">American Express</option>
+                                    <option value="discover">Discover</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="card-number">Card Number (last 4 digits only)</label>
+                                <input type="text" id="card-number" required maxlength="4" pattern="\d{4}" placeholder="1234">
+                            </div>
+                            <div class="form-group">
+                                <label for="expiry-date">Expiry Date</label>
+                                <input type="month" id="expiry-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="credit-limit">Credit Limit</label>
+                                <input type="number" id="credit-limit" min="0" step="0.01" required placeholder="5000.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="current-balance">Current Balance</label>
+                                <input type="number" id="current-balance" min="0" step="0.01" required placeholder="1250.75">
+                            </div>
+                            <div class="form-group">
+                                <label for="card-color">Card Color</label>
+                                <input type="color" id="card-color" value="#2c3e50">
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn secondary-btn" id="cancel-card">Cancel</button>
+                                <button type="submit" class="btn primary-btn">Save Card</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions Section -->
+            <section id="transactions">
+                <div class="section-header">
+                    <h2>Transactions</h2>
+                    <button id="add-transaction-btn" class="btn primary-btn"><i class="fas fa-plus"></i> Add Transaction</button>
+                </div>
+                
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <label for="filter-card">Filter by Card</label>
+                        <select id="filter-card">
+                            <option value="all">All Cards</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-date">Filter by Date</label>
+                        <select id="filter-date">
+                            <option value="all">All Time</option>
+                            <option value="this-month">This Month</option>
+                            <option value="last-month">Last Month</option>
+                            <option value="last-3-months">Last 3 Months</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="transactions-list">
+                    <p class="empty-state">No transactions recorded</p>
+                </div>
+                
+                <!-- Add Transaction Modal -->
+                <div id="transaction-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h2 id="transaction-modal-title">Add New Transaction</h2>
+                        <form id="transaction-form">
+                            <input type="hidden" id="transaction-id">
+                            <div class="form-group">
+                                <label for="transaction-card">Card</label>
+                                <select id="transaction-card" required>
+                                    <option value="">Select Card</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-amount">Amount</label>
+                                <input type="number" id="transaction-amount" min="0.01" step="0.01" required placeholder="45.67">
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-date">Date</label>
+                                <input type="date" id="transaction-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-description">Description</label>
+                                <input type="text" id="transaction-description" required placeholder="Grocery shopping">
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-category">Category</label>
+                                <select id="transaction-category" required>
+                                    <option value="">Select Category</option>
+                                    <option value="food">Food & Dining</option>
+                                    <option value="shopping">Shopping</option>
+                                    <option value="bills">Bills & Utilities</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="travel">Travel</option>
+                                    <option value="health">Health & Medical</option>
+                                    <option value="education">Education</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn secondary-btn" id="cancel-transaction">Cancel</button>
+                                <button type="submit" class="btn primary-btn">Save Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Analytics Section -->
+            <section id="analytics">
+                <h2>Analytics</h2>
+                <div class="analytics-container">
+                    <div class="chart-container">
+                        <h3>Monthly Spending</h3>
+                        <canvas id="monthly-spending-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Spending by Category</h3>
+                        <canvas id="category-spending-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Credit Utilization</h3>
+                        <canvas id="credit-utilization-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2025 Credit Card Manager. This is a demo application for educational purposes only.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

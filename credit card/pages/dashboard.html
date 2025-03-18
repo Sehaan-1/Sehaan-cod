@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Credit Card Manager</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-credit-card"></i>
+                <span>Credit Card Manager</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="cards.html">My Cards</a></li>
+                <li><a href="transactions.html">Transactions</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+            </ul>
+            <div class="user-menu">
+                <span id="user-name">John Doe</span>
+                <button id="logout-btn" class="btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <div class="date-filter">
+                <select id="period-select">
+                    <option value="this-month">This Month</option>
+                    <option value="last-month">Last Month</option>
+                    <option value="last-3-months">Last 3 Months</option>
+                    <option value="this-year">This Year</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="dashboard-summary">
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Total Balance</h3>
+                    <p id="total-balance">$0.00</p>
+                    <span class="trend positive">↑ 2.5%</span>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Active Cards</h3>
+                    <p id="active-cards">0</p>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Monthly Spend</h3>
+                    <p id="monthly-spend">$0.00</p>
+                    <span class="trend negative">↓ 1.2%</span>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Avg. Utilization</h3>
+                    <p id="avg-utilization">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="grid-item spending-chart">
+                <h2>Spending Overview</h2>
+                <canvas id="spending-chart"></canvas>
+            </div>
+            <div class="grid-item category-breakdown">
+                <h2>Category Breakdown</h2>
+                <canvas id="category-chart"></canvas>
+            </div>
+            <div class="grid-item recent-transactions">
+                <h2>Recent Transactions</h2>
+                <div id="transactions-list">
+                    <!-- Transactions will be populated by JavaScript -->
+                </div>
+                <a href="transactions.html" class="btn view-all">View All Transactions</a>
+            </div>
+            <div class="grid-item upcoming-payments">
+                <h2>Upcoming Payments</h2>
+                <div id="payments-list">
+                    <!-- Payments will be populated by JavaScript -->
+                </div>
+                <button class="btn add-payment">Add Payment Reminder</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html> 
