@@ -5,22 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Credit Card Manager</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/nav.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <nav class="main-nav">
         <div class="container">
-            <div class="nav-brand">
-                <i class="fas fa-credit-card"></i>
-                <span>Credit Card Manager</span>
+            <div class="nav-brand-container">
+                <div class="nav-brand">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Credit Card Manager</span>
+                </div>
+                <button class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
             <ul class="nav-links">
-                <li><a href="dashboard.html" class="active">Dashboard</a></li>
-                <li><a href="cards.html">My Cards</a></li>
-                <li><a href="transactions.html">Transactions</a></li>
-                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="dashboard.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="cards.html"><i class="fas fa-credit-card"></i> My Cards</a></li>
+                <li><a href="transactions.html"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
             </ul>
             <div class="user-menu">
                 <span id="user-name">John Doe</span>
@@ -30,9 +40,20 @@
     </nav>
 
     <main class="container">
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                <h1>Welcome back, <span id="welcome-name">John</span>!</h1>
+                <p>Here's an overview of your credit cards and spending activity.</p>
+            </div>
+            <div class="welcome-date">
+                <div class="current-date" id="current-date">Monday, March 20</div>
+            </div>
+        </div>
+
         <div class="dashboard-header">
-            <h1>Dashboard</h1>
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
             <div class="date-filter">
+                <label for="period-select">Time Period:</label>
                 <select id="period-select">
                     <option value="this-month">This Month</option>
                     <option value="last-month">Last Month</option>
@@ -41,18 +62,8 @@
                 </select>
             </div>
         </div>
-
+        
         <div class="dashboard-summary">
-            <div class="summary-card">
-                <div class="card-icon">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <div class="card-content">
-                    <h3>Total Balance</h3>
-                    <p id="total-balance">$0.00</p>
-                    <span class="trend positive">↑ 2.5%</span>
-                </div>
-            </div>
             <div class="summary-card">
                 <div class="card-icon">
                     <i class="fas fa-credit-card"></i>
@@ -64,12 +75,21 @@
             </div>
             <div class="summary-card">
                 <div class="card-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Total Balance</h3>
+                    <p id="total-balance">$0.00</p>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="card-icon">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="card-content">
                     <h3>Monthly Spend</h3>
                     <p id="monthly-spend">$0.00</p>
-                    <span class="trend negative">↓ 1.2%</span>
+                    <span class="trend positive"><i class="fas fa-arrow-down"></i> 5% vs last month</span>
                 </div>
             </div>
             <div class="summary-card">
@@ -84,32 +104,108 @@
         </div>
 
         <div class="dashboard-grid">
+            <div class="grid-item recent-transactions">
+                <div class="item-header">
+                    <h3><i class="fas fa-receipt"></i> Recent Transactions</h3>
+                    <a href="transactions.html" class="btn btn-sm">View All</a>
+                </div>
+                <div id="transactions-list">
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <p>No recent transactions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid-item upcoming-payments">
+                <div class="item-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Upcoming Payments</h3>
+                    <button class="btn btn-sm" id="add-payment">Add Reminder</button>
+                </div>
+                <div id="payments-list">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <p>No upcoming payments</p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="grid-item spending-chart">
-                <h2>Spending Overview</h2>
+                <h3><i class="fas fa-chart-column"></i> Spending Overview</h3>
                 <canvas id="spending-chart"></canvas>
             </div>
+            
             <div class="grid-item category-breakdown">
-                <h2>Category Breakdown</h2>
+                <h3><i class="fas fa-tags"></i> Spending by Category</h3>
                 <canvas id="category-chart"></canvas>
             </div>
-            <div class="grid-item recent-transactions">
-                <h2>Recent Transactions</h2>
-                <div id="transactions-list">
-                    <!-- Transactions will be populated by JavaScript -->
-                </div>
-                <a href="transactions.html" class="btn view-all">View All Transactions</a>
-            </div>
-            <div class="grid-item upcoming-payments">
-                <h2>Upcoming Payments</h2>
-                <div id="payments-list">
-                    <!-- Payments will be populated by JavaScript -->
-                </div>
-                <button class="btn add-payment">Add Payment Reminder</button>
+        </div>
+
+        <div class="quick-actions">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            <div class="actions-grid">
+                <a href="cards.html" class="action-card">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add New Card</span>
+                </a>
+                <a href="transactions.html" class="action-card">
+                    <i class="fas fa-plus"></i>
+                    <span>Record Transaction</span>
+                </a>
+                <a href="analytics.html" class="action-card">
+                    <i class="fas fa-chart-line"></i>
+                    <span>View Analytics</span>
+                </a>
+                <a href="#" class="action-card" id="export-data">
+                    <i class="fas fa-download"></i>
+                    <span>Export Data</span>
+                </a>
             </div>
         </div>
     </main>
 
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Credit Card Manager. This is a demo application for educational purposes only.</p>
+        </div>
+    </footer>
+
     <script src="../js/auth.js"></script>
     <script src="../js/dashboard.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+        
+        // Set current date
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', options);
+        
+        // Export data functionality
+        document.getElementById('export-data').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const cards = JSON.parse(localStorage.getItem('creditCards')) || [];
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            
+            const exportData = {
+                cards,
+                transactions,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'credit-card-data.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        });
+    </script>
 </body>
 </html> 

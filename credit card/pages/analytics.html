@@ -5,94 +5,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics - Credit Card Manager</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/nav.css">
     <link rel="stylesheet" href="../css/analytics.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <nav class="main-nav">
-        <!-- Same navigation as dashboard.html -->
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="../index.html" class="logo">
+                <i class="fas fa-credit-card"></i>
+                Credit Card Manager
+            </a>
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="cards.html">
+                    <i class="fas fa-credit-card"></i> My Cards
+                </a>
+                <a href="transactions.html">
+                    <i class="fas fa-exchange-alt"></i> Transactions
+                </a>
+                <a href="analytics.html" class="active">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+            </div>
+            <div class="nav-user">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button id="logout-btn" class="btn secondary-btn">Logout</button>
+            </div>
+        </div>
     </nav>
 
-    <main class="container">
-        <div class="analytics-header">
-            <h1>Analytics</h1>
-            <div class="date-filter">
-                <select id="period-select">
-                    <option value="this-month">This Month</option>
-                    <option value="last-month">Last Month</option>
-                    <option value="last-3-months">Last 3 Months</option>
-                    <option value="this-year">This Year</option>
-                    <option value="custom">Custom Range</option>
-                </select>
+    <!-- Main Content -->
+    <div class="container">
+        <header class="section-header">
+            <h1 class="section-title">Analytics</h1>
+            <div class="user-greeting">
+                Welcome, <span id="user-name">User</span>
             </div>
-        </div>
+        </header>
 
-        <div class="analytics-grid">
-            <div class="grid-item spending-trends">
-                <h2>Spending Trends</h2>
-                <canvas id="spending-trends-chart"></canvas>
-            </div>
-            <div class="grid-item category-analysis">
-                <h2>Category Analysis</h2>
-                <canvas id="category-analysis-chart"></canvas>
-            </div>
-            <div class="grid-item card-usage">
-                <h2>Card Usage</h2>
-                <canvas id="card-usage-chart"></canvas>
-            </div>
-            <div class="grid-item credit-utilization">
-                <h2>Credit Utilization</h2>
-                <canvas id="credit-utilization-chart"></canvas>
-            </div>
-        </div>
-
-        <div class="insights-section">
-            <h2>Key Insights</h2>
-            <div class="insights-grid">
-                <div class="insight-card">
-                    <h3>Top Spending Category</h3>
-                    <div id="top-category">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span>Shopping</span>
-                        <strong>$1,234.56</strong>
-                    </div>
+        <div class="analytics-container">
+            <!-- Spending Metrics -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Spending Metrics</h2>
                 </div>
-                <div class="insight-card">
-                    <h3>Most Used Card</h3>
-                    <div id="most-used-card">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Rewards Card</span>
-                        <strong>45% of transactions</strong>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Total Spending</div>
+                        <div class="metric-value" id="total-spending">$0.00</div>
                     </div>
-                </div>
-                <div class="insight-card">
-                    <h3>Spending Growth</h3>
-                    <div id="spending-growth">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Month over Month</span>
-                        <strong class="positive">+5.2%</strong>
+                    <div class="metric-card">
+                        <div class="metric-title">Avg. Monthly Spending</div>
+                        <div class="metric-value" id="avg-monthly-spend">$0.00</div>
                     </div>
-                </div>
-                <div class="insight-card">
-                    <h3>Average Transaction</h3>
-                    <div id="avg-transaction">
-                        <i class="fas fa-calculator"></i>
-                        <span>Per Transaction</span>
-                        <strong>$67.89</strong>
+                    <div class="metric-card">
+                        <div class="metric-title">Avg. Transaction</div>
+                        <div class="metric-value" id="avg-transaction">$0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Credit Utilization</div>
+                        <div class="metric-value" id="utilization-rate">0%</div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="recommendations-section">
-            <h2>Recommendations</h2>
-            <div class="recommendations-grid" id="recommendations-container">
-                <!-- Recommendations will be populated by JavaScript -->
+            <!-- Monthly Spending Trends -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Monthly Spending</h2>
+                    <div class="analytics-filter" id="spending-period-filter">
+                        <button class="analytics-filter-btn active" data-period="all">All Time</button>
+                        <button class="analytics-filter-btn" data-period="1y">1 Year</button>
+                        <button class="analytics-filter-btn" data-period="90d">90 Days</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="monthly-spending-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Category Breakdown</h2>
+                    <div class="analytics-filter" id="category-period-filter">
+                        <button class="analytics-filter-btn active" data-period="all">All Time</button>
+                        <button class="analytics-filter-btn" data-period="1y">1 Year</button>
+                        <button class="analytics-filter-btn" data-period="90d">90 Days</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="category-breakdown-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Categories -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Top Spending Categories</h2>
+                </div>
+                <div id="top-categories"></div>
+            </div>
+
+            <!-- Weekday Spending -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Spending by Day</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="weekday-spending-chart"></canvas>
+                </div>
+                <div class="trend-summary">
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-arrow-up"></i> Highest Spending
+                        </div>
+                        <div class="trend-value" id="highest-spending-day">-</div>
+                        <div id="highest-spending-amount" class="category-percent">$0.00</div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-arrow-down"></i> Lowest Spending
+                        </div>
+                        <div class="trend-value" id="lowest-spending-day">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Merchants -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Top Merchants</h2>
+                </div>
+                <div id="top-merchants" class="trend-summary"></div>
+            </div>
+
+            <!-- Spending Prediction -->
+            <div class="analytics-card analytics-full-width" id="prediction-container">
+                <div class="analytics-card-header">
+                    <h2 class="analytics-card-title">Spending Prediction</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="spending-prediction-chart"></canvas>
+                </div>
+                <div class="trend-summary">
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-calendar-alt"></i> Next Month Prediction
+                        </div>
+                        <div class="trend-value" id="next-month-spend">$0.00</div>
+                        <div class="category-percent">Based on your spending pattern</div>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2023 Credit Card Manager. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript -->
     <script src="../js/auth.js"></script>
     <script src="../js/analytics.js"></script>
 </body>

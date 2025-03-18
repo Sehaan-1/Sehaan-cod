@@ -5,12 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transactions - Credit Card Manager</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/nav.css">
     <link rel="stylesheet" href="../css/transactions.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <nav class="main-nav">
-        <!-- Same navigation as dashboard.html -->
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-credit-card"></i>
+                <span>Credit Card Manager</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="cards.html">My Cards</a></li>
+                <li><a href="transactions.html" class="active">Transactions</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+            </ul>
+            <div class="user-menu">
+                <span id="user-name">John Doe</span>
+                <button id="logout-btn" class="btn">Logout</button>
+            </div>
+        </div>
     </nav>
 
     <main class="container">
